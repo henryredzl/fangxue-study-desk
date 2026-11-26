@@ -227,7 +227,9 @@ const pattern = /(<script id="question-bank" type="application\/json">)[\s\S]*?(
 const match = html.match(pattern);
 assert.ok(match, 'Missing the question bank');
 const curriculum = JSON.parse(match[0].slice(match[1].length, -match[2].length));
-curriculum.math = [...curriculum.math.filter(topic => !topic.drill), ...drills];
+const otherVolumes = curriculum.math.filter(topic => topic.book && topic.book !== 'g3a');
+const autumnCore = curriculum.math.filter(topic => (!topic.book || topic.book === 'g3a') && !topic.drill);
+curriculum.math = [...autumnCore, ...drills, ...otherVolumes];
 const asks = drills.flatMap(topic => topic.questions.map(question => question.ask));
 assert.equal(new Set(asks).size, asks.length, 'Calculation questions must be distinct');
 const bank = JSON.stringify(curriculum, null, 2).replaceAll('<', '\\u003c');

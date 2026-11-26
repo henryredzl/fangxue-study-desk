@@ -98,7 +98,7 @@
   }
 
   function answerList() {
-    const all = Object.entries(store.records).filter(([id]) => questionMap[id]);
+    const all = assessmentQuestions().filter(q=>store.records[q.id]).map(q=>[q.id,store.records[q.id]]);
     const entries = all.filter(([id, record]) =>
       (subjectFilter === 'all' || questionMap[id].subject === subjectFilter) &&
       (filter === 'all' || record[filter])
@@ -108,24 +108,25 @@
       const q = questionMap[id];
       const count = q.type === 'write' ? `看示例 ${record.written} 次` : `答对 ${record.correct} 次 · 答错 ${record.wrong} 次`;
       return `<article class="record-row account-answer"><div><p class="answer-name">${escape(q.ask)}</p>
-        <small>${subjects[q.subject].name} · ${topicMap[q.topic].title} · ${count}</small><br><small>最近作答 ${dateFormat.format(new Date(record.at))}</small></div>
+        <small>${bookName(q.book)} · ${subjects[q.subject].name} · ${topicMap[q.topic].title} · ${count}</small><br><small>最近作答 ${dateFormat.format(new Date(record.at))}</small></div>
         <div class="account-answer-actions"><span class="answer-badge ${record.latest}">最近${labels[record.latest]}</span>${button('再练这题','account-repractice',q.id)}</div></article>`;
     }).join('')}</div>`;
   }
 
   function recordsPage() {
-    const list = Object.values(store.records);
+    const scoped = assessmentQuestions();
+    const list = scoped.map(q=>store.records[q.id]).filter(Boolean);
     const accuracy = totals(list);
     const objectiveQuestions = list.filter(record => typeof record.first === 'boolean');
     const firstCorrect = objectiveQuestions.filter(record => record.first).length;
     const firstRate = objectiveQuestions.length ? `${Math.round(firstCorrect / objectiveQuestions.length * 100)}%` : '—';
     const selectOptions = (options, selected) => Object.entries(options).map(([key,label])=>`<option value="${key}" ${selected === key ? 'selected' : ''}>${label}</option>`).join('');
     const subjectNames = Object.fromEntries(Object.entries(subjects).map(([key,value]) => [key,value.name]));
-    return `${pageHead('学习记录',`${escape(account.user.username)} · 查看各科正确率、答对题和错题。`,button('刷新记录','account-refresh'))}
-      ${stats([['累计客观题正确率',accuracy.rate],['客观题首答正确率',firstRate],['待订正题目',errors().length]])}
-      <p class="record-method">累计答对 ${accuracy.correct} / ${accuracy.objective} 次 · 已练 ${list.length} / ${questions.length} 题。累计正确率包含重复作答，首答正确率按每题第一次作答计算。开放题另计。</p>
+    return `${pageHead('学习记录',`${escape(account.user.username)} · ${assessmentLabel()}`,`<div class="subject-tools">${scopePicker()}${button('刷新记录','account-refresh')}</div>`)}
+      ${stats([['累计客观题正确率',accuracy.rate],['客观题首答正确率',firstRate],['待订正题目',errors(scoped).length]])}
+      <p class="record-method">累计答对 ${accuracy.correct} / ${accuracy.objective} 次 · 已练 ${list.length} / ${scoped.length} 题。累计正确率包含重复作答，首答正确率按每题第一次作答计算。开放题另计。</p>
       <div class="subjects">${Object.entries(subjects).map(([key,s]) => {
-        const qs = bySubject(key);
+        const qs = bySubject(key,scoped);
         const entries = qs.map(q => store.records[q.id]).filter(Boolean);
         const score = totals(entries);
         return `<article class="subject-card ${key}"><div class="card-top"><div class="subject-icon" aria-hidden="true">${s.icon}</div><h3>${s.name}</h3></div>
