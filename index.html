@@ -7433,15 +7433,16 @@ const bookCatalog = {
 };
 const defaultBook = 'g3a';
 const bookStorageKey = 'fangxue-study-book-v1';
+const knownBook = key => Object.prototype.hasOwnProperty.call(bookCatalog,key);
 const bookName = (key = activeBook) => `${bookCatalog[key].gradeName}${bookCatalog[key].term}`;
 let activeBook = defaultBook;
 let recordScope = 'book';
 try {
   const savedBook = localStorage.getItem(bookStorageKey);
-  if (Object.hasOwn(bookCatalog,savedBook)) activeBook = savedBook;
+  if (knownBook(savedBook)) activeBook = savedBook;
 } catch { /* The book can still be switched during this visit. */ }
 function selectBook(key) {
-  if (!Object.hasOwn(bookCatalog,key) || key === activeBook) return;
+  if (!knownBook(key) || key === activeBook) return;
   if (bookCatalog[key].grade !== bookCatalog[activeBook].grade) recordScope = 'book';
   activeBook = key;
   try { localStorage.setItem(bookStorageKey,key); } catch { /* Keep the in-memory choice. */ }
