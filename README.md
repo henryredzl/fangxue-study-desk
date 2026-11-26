@@ -12,7 +12,7 @@
    .\android\build.ps1 -Output '.\StudyDesk-Android-v1.0.1.apk'
    ```
 
-4. 提交题库和版本号改动，将相应版本打标签并发布到 GitHub 私有仓库的 **Releases**，把生成的 APK 附在该版本上。发布说明列清楚本次新增的学科和单元。
+4. 提交题库和版本号改动，将相应版本打标签并发布到 GitHub 仓库的 **Releases**，把生成的 APK 附在该版本上。发布说明列清楚本次新增的学科和单元。
 5. 在手机上下载 APK 后覆盖安装。安装后可以检查新版题目和之前的学习记录。
 
 本机打包工具与安卓签名保存在 `%LOCALAPPDATA%\StudyDeskAndroidTools`。`study-desk-key.p12` 和 `study-desk-key-password.clixml` 用于延续旧版本的签名，后者由当前 Windows 用户加密。把两者在本机妥善备份。仓库提交源码和题库，APK 放在 Release，学习数据与签名文件保存在本机。
