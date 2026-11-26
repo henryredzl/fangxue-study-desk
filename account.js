@@ -285,6 +285,7 @@
       if (route.page === 'home') return false;
       if (route.page === 'quiz' || route.page === 'finish') go(session.back, session.key);
       else if (route.page === 'study') go('subject', topicMap[route.key].subject);
+      else if (route.page === 'drills') go('subject', 'math');
       else go('home');
       return true;
     };
