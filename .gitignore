@@ -1,0 +1,11 @@
+/data/
+*.sqlite
+*.sqlite-*
+*.apk
+*.p12
+*.jks
+*.keystore
+*.clixml
+.env
+.env.*
+*学习记录.json
