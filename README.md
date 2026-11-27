@@ -22,3 +22,13 @@
 三年级上册计算专项和下册题库可分别运行 `node scripts/update-math-drills.cjs` 和 `node scripts/update-spring-bank.cjs` 更新到 `index.html`。新册次使用新的 `book` 值和新的考点 `id`。上册的历史题号按原规则保留。
 
 一、二年级的四册题库由 `node scripts/update-early-bank.cjs` 更新到 `index.html`。执行 `node scripts/update-early-bank.cjs --transcripts` 可列出需配音的题号和英文文本。
+
+## iPhone 和 iPad
+
+iOS 版支持 iOS 16 或 iPadOS 16 及以上。Xcode 构建时会直接打包同一份题库、界面和听力。账号、正确率和错题保存在设备上的 SQLite 数据库里。可以在 App 登录同名账号后，使用「导入电脑记录」选择网页端下载的 JSON 文件。
+
+1. 在 Mac 上安装 Xcode 和 Node.js 22 或以上版本，打开 [`ios/StudyDesk.xcodeproj`](ios/StudyDesk.xcodeproj)。
+2. 选择 iPhone 或 iPad 模拟器，点 Run。若 Xcode 找不到 Node.js，可在 Build Settings 中设置 `NODE_BINARY` 为 Node.js 可执行文件的绝对路径。
+3. 要安装到实体设备，连接 iPhone 或 iPad，在 Signing & Capabilities 中为 StudyDesk 选择自己的 Apple 签名团队，并使用团队可注册的 Bundle Identifier。以后用同一团队和 Bundle Identifier 更新，以保留原安装的学习数据。[Apple 真机运行说明](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices)
+
+更新题库后，和安卓一样重新构建应用即可。iOS 的版本号和构建号在 StudyDesk 目标的 Build Settings 中配置。

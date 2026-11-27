@@ -8,11 +8,15 @@
   let filter = 'all';
   let subjectFilter = 'all';
   const android = window.StudyAndroid;
+  const ios = window.webkit?.messageHandlers?.studyDesk;
+  const mobile = android || ios;
 
   async function api(path, body) {
-    if (android) {
-      await new Promise(resolve => setTimeout(resolve, 0));
-      const { status, data } = JSON.parse(android.request(path, JSON.stringify(body ?? {})));
+    if (mobile) {
+      if (android) await new Promise(resolve => setTimeout(resolve, 0));
+      const { status, data } = ios
+        ? await ios.postMessage({ path, body: body ?? {} })
+        : JSON.parse(android.request(path, JSON.stringify(body ?? {})));
       if (status >= 400) throw Object.assign(new Error(data.error), { status });
       return data;
     }
@@ -59,7 +63,7 @@
       if (route.page === 'quiz' || route.page === 'finish') go('home');
       else render();
     } catch {
-      accountMessage = android ? '暂时无法读取手机上的记录，请重试。' : '暂时连不上本机数据库，请确认学习网页窗口仍在运行，再试一次。';
+      accountMessage = mobile ? '暂时无法读取本机记录，请重试。' : '暂时连不上本机数据库，请确认学习网页窗口仍在运行，再试一次。';
       if (route.page === 'account') render();
     } finally {
       account.busy = false;
@@ -69,9 +73,9 @@
   function accountPage() {
     const message = `<p class="notice" id="account-message" role="status" ${accountMessage ? '' : 'hidden'}>${escape(accountMessage)}</p>`;
     if (account.user) {
-      const migration = android ? button('导入电脑记录','account-import') : button('下载手机迁移文件','account-export');
-      const tip = android ? '要迁移电脑记录，请在电脑端下载迁移文件，再用这里的同名账号导入。' : '要把记录搬到手机，请下载迁移文件，然后在安卓 App 里登录同名账号导入。';
-      return `<section class="study">${pageHead('学习账号',android ? '每次提交的作答结果都会存到这部手机。' : '每次提交的作答结果都会存到这台电脑的数据库。')}
+      const migration = mobile ? button('导入电脑记录','account-import') : button('下载手机迁移文件','account-export');
+      const tip = mobile ? '要迁移电脑记录，请在电脑端下载迁移文件，再用这里的同名账号导入。' : '要把记录搬到手机，请下载迁移文件，然后在手机 App 里登录同名账号导入。';
+      return `<section class="study">${pageHead('学习账号',mobile ? '每次提交的作答结果都会存到这台设备。' : '每次提交的作答结果都会存到这台电脑的数据库。')}
         <article class="panel account-panel"><h2>${escape(account.user.username)}</h2><p>每个账号有独立的正确率、错题本和作答记录。</p>${message}
         <div class="question-buttons">${button('查看学习记录','records','','primary')}${migration}${button('退出登录','account-logout')}</div><p>${tip}</p></article></section>`;
     }
@@ -247,7 +251,16 @@
     go('account');
   };
   actions['account-logout'] = logout;
-  actions['account-import'] = () => android?.chooseImport();
+  actions['account-import'] = async () => {
+    if (android) return android.chooseImport();
+    if (!ios) return;
+    try {
+      const result = await ios.postMessage({ path: 'choose-import', body: {} });
+      if (result.status !== 204) account.onImport(result);
+    } catch {
+      account.onImport({ status: 500, data: { error: '暂时无法读取文件，请重试。' } });
+    }
+  };
   actions['account-export'] = async () => {
     account.busy = true;
     try {

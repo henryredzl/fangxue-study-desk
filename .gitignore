@@ -9,3 +9,7 @@
 .env
 .env.*
 *学习记录.json
+xcuserdata/
+DerivedData/
+*.ipa
+*.xcarchive/
