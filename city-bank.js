@@ -1115,7 +1115,7 @@ const fifthMath = {
     const den=bottom/fifthGCD(d,e);
     return mathResult(`1/${d} ${b===1?'+':'−'} 1/${e} 等于多少？请写最简分数。`,fifthFraction(top,bottom),fifthFraction(1,d),
       `把单位统一为 1/${den}，分子分别是 ${den/d} 与 ${den/e}。做${b===1?'加':'减'}法再约分。`,
-      `也能用 ${bottom} 作为共同分母，分子是 ${e} 和 ${d}，先算 ${top}/${bottom}，再化为最简分数。`,{answerFormat:'lowest-fraction'});
+      `画两张相同的长方形纸，都分成 ${d} 列、${e} 行。第一张涂一列得到 ${e} 格，第二张涂一行得到 ${d} 格。按题意把涂色格数相${b===1?'加':'减'}，得到 ${top} 格，再用总格数 ${bottom} 写分数并约分。`,{answerFormat:'lowest-fraction'});
   },
   'g5b-cuboids': n=>{
     const a=5+n%7,b=3+n%4,c=2+Math.floor(n/3)%5,volume=a*b*c,area=2*(a*b+a*c+b*c);
