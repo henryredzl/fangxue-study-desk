@@ -15,13 +15,17 @@ on:
       - 'android/src/main/AndroidManifest.xml'
       - '.github/workflows/ios.yml'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional published version tag to archive, for example v1.4.1'
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   simulator:
-    if: github.ref_type != 'tag'
+    if: github.ref_type != 'tag' && (github.event_name != 'workflow_dispatch' || inputs.release_tag == '')
     runs-on: macos-15
     timeout-minutes: 15
     steps:
@@ -56,14 +60,19 @@ jobs:
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: macos-15
     timeout-minutes: 15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      RELEASE_TAG: ${{ inputs.release_tag || (github.ref_type == 'tag' && github.ref_name) || '' }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
       - name: Prepare a Release archive for physical iPhone and iPad devices
         run: |
           VERSION="$(node scripts/release-version.cjs --check)"
-          if [ "$GITHUB_REF_TYPE" = tag ]; then test "$GITHUB_REF_NAME" = "v$VERSION"; fi
+          if [ -n "$RELEASE_TAG" ]; then test "$RELEASE_TAG" = "v$VERSION"; fi
           SDK="$(xcrun --sdk iphoneos --show-sdk-version)"
-          test "${SDK%%.*}" -ge 26
+          if [ "${SDK%%.*}" -lt 26 ]; then echo "iOS 26 SDK or newer required; got $SDK"; exit 1; fi
           ARCHIVE="$RUNNER_TEMP/StudyDesk-iOS-v$VERSION.xcarchive"
           xcodebuild -project ios/StudyDesk.xcodeproj -scheme StudyDesk -configuration Release \
             -destination 'generic/platform=iOS' -archivePath "$ARCHIVE" CODE_SIGNING_ALLOWED=NO archive
