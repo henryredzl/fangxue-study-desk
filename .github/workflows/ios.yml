@@ -1,0 +1,49 @@
+name: iOS build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - 'index.html'
+      - 'city-bank.js'
+      - 'account.*'
+      - 'android/src/main/android.css'
+      - 'scripts/package-app-assets.cjs'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build iPhone and iPad simulator app
+        run: |
+          xcodebuild -project ios/StudyDesk.xcodeproj -scheme StudyDesk -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/StudyDeskBuild" \
+            CODE_SIGNING_ALLOWED=NO build
+      - name: Check local SQLite and packaged answer keys
+        run: |
+          mkdir -p "$RUNNER_TEMP/StudyDeskTests"
+          xcrun --sdk macosx swiftc ios/StudyDesk/StudyStore.swift ios/Tests/StudyStoreSmoke.swift \
+            -o "$RUNNER_TEMP/StudyDeskTests/smoke"
+          "$RUNNER_TEMP/StudyDeskTests/smoke" \
+            "$RUNNER_TEMP/StudyDeskBuild/Build/Products/Debug-iphonesimulator/StudyDesk.app/WebAssets/question-bank.json"
+      - name: Launch on an iPhone simulator
+        run: |
+          DEVICE="$(xcrun simctl list devices available --json | node -e '
+            const devices = Object.values(JSON.parse(require("fs").readFileSync(0, "utf8")).devices).flat();
+            const iPhone = devices.find(device => device.name.startsWith("iPhone"));
+            if (!iPhone) process.exit(1);
+            console.log(iPhone.udid);
+          ')"
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl install "$DEVICE" "$RUNNER_TEMP/StudyDeskBuild/Build/Products/Debug-iphonesimulator/StudyDesk.app"
+          xcrun simctl launch "$DEVICE" com.fangxue.studydesk
+
