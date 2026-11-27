@@ -39,13 +39,9 @@ final class StudyDatabase extends SQLiteOpenHelper {
     StudyDatabase(Context context, JSONObject bank) throws JSONException {
         super(context, "study.sqlite", null, 1);
         session = context.getSharedPreferences("study_session", Context.MODE_PRIVATE);
-        for (Iterator<String> subjects = bank.keys(); subjects.hasNext();) {
-            JSONArray topics = bank.getJSONArray(subjects.next());
-            for (int i = 0; i < topics.length(); i++) {
-                JSONObject topic = topics.getJSONObject(i);
-                JSONArray list = topic.getJSONArray("questions");
-                for (int j = 0; j < list.length(); j++) questions.put(topic.getString("id") + "-" + (j + 1), list.getJSONObject(j));
-            }
+        for (Iterator<String> ids = bank.keys(); ids.hasNext();) {
+            String id = ids.next();
+            questions.put(id, bank.getJSONObject(id));
         }
     }
 

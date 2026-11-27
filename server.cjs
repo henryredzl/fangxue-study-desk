@@ -5,6 +5,7 @@ const { DatabaseSync } = require('node:sqlite');
 const { createHash, randomBytes, scrypt, timingSafeEqual } = require('node:crypto');
 const { promisify } = require('node:util');
 const { spawn } = require('node:child_process');
+const cityQuestions = require('./city-bank.js');
 
 const port = Number(process.env.STUDY_PORT || 4178);
 const address = `http://127.0.0.1:${port}`;
@@ -15,11 +16,13 @@ const questionBank = JSON.parse(bankMatch[1]);
 const questions = new Map(Object.values(questionBank).flatMap(topics => topics.flatMap(topic =>
   topic.questions.map((question, index) => [`${topic.id}-${index + 1}`, question])
 )));
+for (const question of Object.values(cityQuestions).flat()) questions.set(question.id,question);
 const page = offlinePage.replace('</head>', '<link rel="stylesheet" href="/account.css">\n</head>')
   .replace('</body>', '<script src="/account.js"></script>\n</body>');
 const resources = new Map([
   ['/', ['text/html; charset=utf-8', page]],
   ['/index.html', ['text/html; charset=utf-8', page]],
+  ['/city-bank.js', ['text/javascript; charset=utf-8', readFileSync(join(__dirname, 'city-bank.js'))]],
   ['/account.js', ['text/javascript; charset=utf-8', readFileSync(join(__dirname, 'account.js'))]],
   ['/account.css', ['text/css; charset=utf-8', readFileSync(join(__dirname, 'account.css'))]]
 ]);

@@ -38,6 +38,7 @@ public final class MainActivity extends Activity {
     private static final Map<String, String> ASSET_HEADERS = new HashMap<>();
     static {
         ASSETS.put("/index.html", "text/html");
+        ASSETS.put("/city-bank.js", "text/javascript");
         ASSETS.put("/account.js", "text/javascript");
         ASSETS.put("/account.css", "text/css");
         ASSETS.put("/android.css", "text/css");
@@ -51,7 +52,7 @@ public final class MainActivity extends Activity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         try (InputStream bank = getAssets().open("question-bank.json")) {
-            database = new StudyDatabase(this, new JSONObject(readText(bank, 512 * 1024)));
+            database = new StudyDatabase(this, new JSONObject(readText(bank, 2 * 1024 * 1024)));
         } catch (IOException | JSONException error) {
             Toast.makeText(this, "无法加载题库，请重新安装应用。", Toast.LENGTH_LONG).show();
             finish();

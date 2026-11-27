@@ -288,6 +288,7 @@
       if (route.page === 'quiz' || route.page === 'finish') go(session.back, session.key);
       else if (route.page === 'study') go('subject', topicMap[route.key].subject);
       else if (route.page === 'drills') go('subject', 'math');
+      else if (route.page === 'city-detail') go('cities', route.key.split(':')[3] || '');
       else go('home');
       return true;
     };

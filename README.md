@@ -2,14 +2,16 @@
 
 小学一至三年级上下册的练习。用首页顶部切换册次。一、二年级每日练语文和数学，另有自选英语启蒙。数学的「计算专项」按技能分组，每组 8 题。学习记录默认显示本册，可切换为同年级已收录的各册统计。安卓 App 把题库和听力随 APK 一起安装，电脑端通过 `启动学习网页.cmd` 打开。
 
+「四城任务」覆盖六册的 112 个核心考点，每个考点在北京、上海、广州、深圳各有 8 道变式。可先选城市与学科，再按基础识记、易错辨析、读料提取和情境应用选练。每个考点每种问法有 2 道，提交后显示两条解题思路或自查方法。素材与参数在 [`city-bank.js`](city-bank.js)，既有题号与四城变式题号分别保留，更新时延续已发布的题号和含义。
+
 ## 随课程进度发布新版
 
 1. 在 [`index.html`](index.html) 的 `question-bank` 里添加本次课程的考点和配套题。每个考点按基础识记、易错辨析、材料提取、情境应用的顺序给出四道题。已有题目由考点 `id` 和题目位置共同识别，更新时保留已有编号和顺序。需要增加新内容时，使用新的考点 `id`，便于旧答案和错题继续对应原题。
-2. 在 [`AndroidManifest.xml`](android/src/main/AndroidManifest.xml) 中提高 `versionCode`，填写相应的 `versionName`，例如从 `1.3.0` 升到 `1.3.1`。包名继续使用 `com.fangxue.studydesk`。
+2. 在 [`AndroidManifest.xml`](android/src/main/AndroidManifest.xml) 中提高 `versionCode`，填写相应的 `versionName`，例如从 `1.4.0` 升到 `1.4.1`。包名继续使用 `com.fangxue.studydesk`。
 3. 在这台电脑的项目目录打开 PowerShell，使用原签名打包。脚本会同时把题库写入界面和判分所用的资源，并校验 APK 签名。
 
    ```powershell
-   .\android\build.ps1 -Output '.\StudyDesk-Android-v1.3.1.apk'
+   .\android\build.ps1 -Output '.\StudyDesk-Android-v1.4.1.apk'
    ```
 
 4. 提交题库和版本号改动，将相应版本打标签并发布到 GitHub 仓库的 **Releases**，把生成的 APK 附在该版本上。发布说明列清楚本次新增的学科和单元。
