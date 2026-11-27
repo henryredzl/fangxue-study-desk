@@ -87,6 +87,7 @@ final class StudyStore {
         try db.script("""
             PRAGMA foreign_keys = ON;
             PRAGMA journal_mode = WAL;
+            PRAGMA secure_delete = ON;
             CREATE TABLE IF NOT EXISTS accounts (
                 id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, salt TEXT NOT NULL, hash TEXT NOT NULL
             );
@@ -105,6 +106,23 @@ final class StudyStore {
 
     func signedInID() throws -> Int? {
         try db.rows("SELECT account_id FROM login_session WHERE singleton = 1").first.flatMap { Int($0[0]) }
+    }
+
+    func deleteAccount(id: Int) throws -> JSON {
+        guard try signedInID() == id else { throw StudyProblem(401, "请登录要删除的账号后重试。") }
+        let args = [String(id)]
+        try db.script("BEGIN IMMEDIATE;")
+        do {
+            try db.insert("DELETE FROM attempts WHERE account_id = ?", args)
+            try db.insert("DELETE FROM login_session WHERE account_id = ?", args)
+            try db.insert("DELETE FROM accounts WHERE id = ?", args)
+            try db.script("COMMIT;")
+        } catch {
+            try? db.script("ROLLBACK;")
+            throw error
+        }
+        try? db.script("PRAGMA wal_checkpoint(TRUNCATE);")
+        return ["user": NSNull()]
     }
 
     func request(_ path: String, body: JSON) throws -> JSON {

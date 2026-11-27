@@ -7,11 +7,13 @@
         A10000000000000000000001 = {isa = PBXBuildFile; fileRef = A10000000000000000000011; };
         A10000000000000000000002 = {isa = PBXBuildFile; fileRef = A10000000000000000000012; };
         A10000000000000000000003 = {isa = PBXBuildFile; fileRef = A10000000000000000000014; };
+        A10000000000000000000004 = {isa = PBXBuildFile; fileRef = A10000000000000000000016; };
         A10000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyApp.swift; sourceTree = "<group>"; };
         A10000000000000000000012 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyStore.swift; sourceTree = "<group>"; };
         A10000000000000000000013 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
         A10000000000000000000014 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
         A10000000000000000000015 = {isa = PBXFileReference; explicitFileType = wrapper.application; path = StudyDesk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        A10000000000000000000016 = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
         A10000000000000000000020 = {
             isa = PBXGroup;
             children = (A10000000000000000000021, A10000000000000000000022);
@@ -19,7 +21,7 @@
         };
         A10000000000000000000021 = {
             isa = PBXGroup;
-            children = (A10000000000000000000011, A10000000000000000000012, A10000000000000000000013, A10000000000000000000014);
+            children = (A10000000000000000000011, A10000000000000000000012, A10000000000000000000013, A10000000000000000000014, A10000000000000000000016);
             path = StudyDesk;
             sourceTree = "<group>";
         };
@@ -38,7 +40,7 @@
         A10000000000000000000031 = {
             isa = PBXResourcesBuildPhase;
             buildActionMask = 2147483647;
-            files = (A10000000000000000000003);
+            files = (A10000000000000000000003, A10000000000000000000004);
             runOnlyForDeploymentPostprocessing = 0;
         };
         A10000000000000000000032 = {
@@ -95,10 +97,10 @@
             buildSettings = {
                 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
                 CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
+                CURRENT_PROJECT_VERSION = 2;
                 ENABLE_USER_SCRIPT_SANDBOXING = NO;
                 INFOPLIST_FILE = StudyDesk/Info.plist;
-                MARKETING_VERSION = 1.4.0;
+                MARKETING_VERSION = 1.4.1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.fangxue.studydesk;
                 PRODUCT_NAME = "$(TARGET_NAME)";
                 SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -112,10 +114,10 @@
             buildSettings = {
                 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
                 CODE_SIGN_STYLE = Automatic;
-                CURRENT_PROJECT_VERSION = 1;
+                CURRENT_PROJECT_VERSION = 2;
                 ENABLE_USER_SCRIPT_SANDBOXING = NO;
                 INFOPLIST_FILE = StudyDesk/Info.plist;
-                MARKETING_VERSION = 1.4.0;
+                MARKETING_VERSION = 1.4.1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.fangxue.studydesk;
                 PRODUCT_NAME = "$(TARGET_NAME)";
                 SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

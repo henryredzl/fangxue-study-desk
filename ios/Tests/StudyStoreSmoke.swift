@@ -50,6 +50,17 @@ struct StudyStoreSmoke {
         precondition(imported["imported"] as? Int == 1)
         let duplicate = try store.importRecords(destination: id, data: bytes)
         precondition(duplicate["skipped"] as? Int == 1)
-        print("Verified \(bank.count) answer keys, SQLite persistence, account isolation and migration.")
+        let deleted = try store.deleteAccount(id: id)
+        precondition(deleted["user"] is NSNull)
+        do {
+            _ = try store.request("login", body: credentials)
+            preconditionFailure("Deleted accounts must not sign in")
+        } catch let error as StudyProblem {
+            precondition(error.status == 401)
+        }
+        _ = try store.request("login", body: ["username": "another-account", "password": "Test-only-passphrase"])
+        let recreated = try store.request("register", body: credentials)
+        precondition((recreated["records"] as! [String: StudyStore.JSON]).isEmpty)
+        print("Verified \(bank.count) answer keys, SQLite persistence, isolation, migration, and account deletion.")
     }
 }

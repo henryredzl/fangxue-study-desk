@@ -164,6 +164,11 @@ private final class StudyViewController: UIViewController, WKNavigationDelegate,
                 if path == "choose-import" {
                     guard let id = try store.signedInID() else { throw StudyProblem(401, "请先登录学习账号。") }
                     DispatchQueue.main.async { self.presentImport(destination: id, reply: reply) }
+                } else if path == "delete-account" {
+                    guard let id = try store.signedInID(), body["accountId"] as? Int == id else {
+                        throw StudyProblem(401, "请登录要删除的账号后重试。")
+                    }
+                    DispatchQueue.main.async { self.confirmDeletion(id: id, reply: reply) }
                 } else {
                     let output = Self.response(200, try store.request(path, body: body))
                     DispatchQueue.main.async { reply(output, nil) }
@@ -173,6 +178,24 @@ private final class StudyViewController: UIViewController, WKNavigationDelegate,
                 DispatchQueue.main.async { reply(output, nil) }
             }
         }
+    }
+
+    private func confirmDeletion(id: Int, reply: @escaping StudyBridge.Reply) {
+        guard presentedViewController == nil else {
+            reply(Self.response(409, ["error": "请关闭当前窗口后重试。"]), nil)
+            return
+        }
+        let alert = UIAlertController(title: "删除本机账号？", message: "该账号和本机答题记录都将被永久删除。", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel) { _ in reply(Self.response(204), nil) })
+        alert.addAction(UIAlertAction(title: "删除账号", style: .destructive) { _ in
+            self.databaseQueue.async {
+                let output: StudyStore.JSON
+                do { output = Self.response(200, try self.openStore().deleteAccount(id: id)) }
+                catch { output = Self.failure(error) }
+                DispatchQueue.main.async { reply(output, nil) }
+            }
+        })
+        present(alert, animated: true)
     }
 
     private func presentImport(destination: Int, reply: @escaping StudyBridge.Reply) {

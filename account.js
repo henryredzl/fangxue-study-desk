@@ -72,12 +72,14 @@
 
   function accountPage() {
     const message = `<p class="notice" id="account-message" role="status" ${accountMessage ? '' : 'hidden'}>${escape(accountMessage)}</p>`;
+    const privacy = ios ? ' <a class="text-button" href="https://github.com/henryredzl/fangxue-study-desk/blob/main/PRIVACY.md">隐私说明</a>' : '';
     if (account.user) {
       const migration = mobile ? button('导入电脑记录','account-import') : button('下载手机迁移文件','account-export');
       const tip = mobile ? '要迁移电脑记录，请在电脑端下载迁移文件，再用这里的同名账号导入。' : '要把记录搬到手机，请下载迁移文件，然后在手机 App 里登录同名账号导入。';
       return `<section class="study">${pageHead('学习账号',mobile ? '每次提交的作答结果都会存到这台设备。' : '每次提交的作答结果都会存到这台电脑的数据库。')}
         <article class="panel account-panel"><h2>${escape(account.user.username)}</h2><p>每个账号有独立的正确率、错题本和作答记录。</p>${message}
-        <div class="question-buttons">${button('查看学习记录','records','','primary')}${migration}${button('退出登录','account-logout')}</div><p>${tip}</p></article></section>`;
+        <div class="question-buttons">${button('查看学习记录','records','','primary')}${migration}${button('退出登录','account-logout')}</div><p>${tip}</p>
+        ${ios ? `<div class="question-buttons">${textButton('删除本机账号','account-delete')}${privacy}</div>` : ''}</article></section>`;
     }
     const register = authMode === 'register';
     const title = register ? '创建学习账号' : '登录学习账号';
@@ -88,7 +90,7 @@
       <label for="account-password">密码</label><input class="answer-field" id="account-password" name="password" type="password" autocomplete="${register ? 'new-password' : 'current-password'}" required minlength="8" maxlength="128" ${register ? 'aria-describedby="account-password-tip"' : ''}>
       ${register ? '<p id="account-password-tip" class="account-tip">至少 8 个字符。</p>' : ''}${message}
       <div class="question-buttons"><button type="submit" class="btn primary">${register ? '创建并登录' : '登录'}</button>${button(register ? '已有账号，去登录' : '创建账号','account-mode')}</div>
-      </form></article></section>`;
+      </form>${privacy}</article></section>`;
   }
 
   function totals(list) {
@@ -251,6 +253,29 @@
     go('account');
   };
   actions['account-logout'] = logout;
+  if (ios) actions['account-delete'] = async () => {
+    if (!account.user || account.busy) return;
+    const user = account.user;
+    account.busy = true;
+    try {
+      const {status, data} = await ios.postMessage({path: 'delete-account', body: {accountId: user.id}});
+      if (status === 204) return;
+      if (status !== 200) {
+        accountMessage = data.error;
+        return;
+      }
+      try { sessionStorage.removeItem(draftKey(user)); } catch { /* SQLite data has been deleted. */ }
+      useAccount(data);
+      authMode = 'login';
+      accountMessage = '本机账号和学习记录已删除。';
+      go('account');
+    } catch {
+      accountMessage = '删除未能确认，请刷新账号状态后重试。';
+    } finally {
+      account.busy = false;
+      if (route.page === 'account') render();
+    }
+  };
   actions['account-import'] = async () => {
     if (android) return android.chooseImport();
     if (!ios) return;
