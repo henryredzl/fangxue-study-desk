@@ -108,7 +108,7 @@
       const q = questionMap[id];
       const count = q.type === 'write' ? `看示例 ${record.written} 次` : `答对 ${record.correct} 次 · 答错 ${record.wrong} 次`;
       return `<article class="record-row account-answer"><div><p class="answer-name">${escape(q.ask)}</p>
-        <small>${bookName(q.book)} · ${subjects[q.subject].name} · ${topicMap[q.topic].title} · ${count}</small><br><small>最近作答 ${dateFormat.format(new Date(record.at))}</small></div>
+        <small>${bookName(q.book)} · ${subjectName(q.subject,q.book)} · ${topicMap[q.topic].title} · ${count}</small><br><small>最近作答 ${dateFormat.format(new Date(record.at))}</small></div>
         <div class="account-answer-actions"><span class="answer-badge ${record.latest}">最近${labels[record.latest]}</span>${button('再练这题','account-repractice',q.id)}</div></article>`;
     }).join('')}</div>`;
   }
@@ -121,7 +121,7 @@
     const firstCorrect = objectiveQuestions.filter(record => record.first).length;
     const firstRate = objectiveQuestions.length ? `${Math.round(firstCorrect / objectiveQuestions.length * 100)}%` : '—';
     const selectOptions = (options, selected) => Object.entries(options).map(([key,label])=>`<option value="${key}" ${selected === key ? 'selected' : ''}>${label}</option>`).join('');
-    const subjectNames = Object.fromEntries(Object.entries(subjects).map(([key,value]) => [key,value.name]));
+    const subjectNames = Object.fromEntries(Object.keys(subjects).map(key => [key,subjectName(key)]));
     return `${pageHead('学习记录',`${escape(account.user.username)} · ${assessmentLabel()}`,`<div class="subject-tools">${scopePicker()}${button('刷新记录','account-refresh')}</div>`)}
       ${stats([['累计客观题正确率',accuracy.rate],['客观题首答正确率',firstRate],['待订正题目',errors(scoped).length]])}
       <p class="record-method">累计答对 ${accuracy.correct} / ${accuracy.objective} 次 · 已练 ${list.length} / ${scoped.length} 题。累计正确率包含重复作答，首答正确率按每题第一次作答计算。开放题另计。</p>
@@ -129,9 +129,10 @@
         const qs = bySubject(key,scoped);
         const entries = qs.map(q => store.records[q.id]).filter(Boolean);
         const score = totals(entries);
-        return `<article class="subject-card ${key}"><div class="card-top"><div class="subject-icon" aria-hidden="true">${s.icon}</div><h3>${s.name}</h3></div>
-          <p class="card-description">正确率 ${score.rate} · 答对 ${score.correct} / ${score.objective} 次<br>已练 ${entries.length} / ${qs.length} 题</p>${progress(entries.length,qs.length,`${s.name}已练题目`)}
-          <div class="subject-bottom">${textButton(`继续练${s.name}`,'subject',key)}</div></article>`;
+        const label = subjectName(key);
+        return `<article class="subject-card ${key}"><div class="card-top"><div class="subject-icon" aria-hidden="true">${s.icon}</div><h3>${label}</h3></div>
+          <p class="card-description">正确率 ${score.rate} · 答对 ${score.correct} / ${score.objective} 次<br>已练 ${entries.length} / ${qs.length} 题</p>${progress(entries.length,qs.length,`${label}已练题目`)}
+          <div class="subject-bottom">${textButton(`继续练${label}`,'subject',key)}</div></article>`;
       }).join('')}</div>
       <section class="panel account-details" aria-labelledby="answer-detail-title"><div class="account-detail-header"><h2 id="answer-detail-title">逐题记录</h2>
       <div class="account-filters"><label>学科<select id="account-subject-filter">${selectOptions({ all:'全部学科', ...subjectNames },subjectFilter)}</select></label>

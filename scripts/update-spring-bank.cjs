@@ -254,7 +254,13 @@ const region = /(<script id="question-bank" type="application\/json">)[\s\S]*?(<
 const match = html.match(region);
 assert.ok(match,'Question bank not found');
 const bank = JSON.parse(match[0].slice(match[1].length,-match[2].length));
-for (const [subject,list] of Object.entries(additions)) bank[subject] = [...bank[subject].filter(entry=>entry.book !== 'g3b'),...list];
+for (const [subject,list] of Object.entries(additions)) {
+  const previous = bank[subject];
+  const first = previous.findIndex(entry=>entry.book === 'g3b');
+  const retained = previous.filter(entry=>entry.book !== 'g3b');
+  retained.splice(first < 0 ? retained.length : first,0,...list);
+  bank[subject] = retained;
+}
 for (const item of Object.values(additions).flat()) {
   assert.equal(item.questions.length,item.drill ? size * item.drill.sets.length : 4,item.id);
 }
