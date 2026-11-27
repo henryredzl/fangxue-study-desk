@@ -675,7 +675,312 @@ const mathCases = {
   }
 };
 
+const fourthMath = {
+  'g4a-place': n=>{
+    const a=218+n*53,b=100+n%9*61,total=a*10000+b;
+    return n%2
+      ? mathResult(`${total.toLocaleString('en-US')} 从右起第五位是什么数字？`,a%10,a%10===b%10?(a+1)%10:b%10,
+        `向左越过个级的四个数位，下一位是万位，数字为 ${a%10}。`,`先把数写成 ${a} 万加 ${b}。万级的最后一位是 ${a%10}。`)
+      : mathResult(`统计人数为 ${a} 万另 ${b} 人。用阿拉伯数字表示一共多少人？`,total,a*1000+b,
+        `先把 ${a} 万换成 ${a*10000}，再加 ${b}。`,`画出万级和个级两个格子，万级填 ${a}，个级填 ${String(b).padStart(4,'0')}，从左往右合成。`);
+  },
+  'g4a-rounding': n=>{
+    const base=11+n*7, rest=n%2?4900+n%4*20:5010+n*13, value=base*10000+rest;
+    const rounded=Math.round(value/10000);
+    return mathResult(`${value.toLocaleString('en-US')} 四舍五入到万位，约是多少万？`,rounded,rounded===base?base+1:base,
+      `千位是 ${Math.floor(rest/1000)}，按小于 5 舍去、满 5 进一，得 ${rounded} 万。`,
+      `比较它离 ${base} 万和 ${base+1} 万的距离，分别差 ${rest} 和 ${10000-rest}，取更近的 ${rounded} 万。`);
+  },
+  'g4a-protractor': n=>{
+    const a=n===17?91:22+n*4;
+    if(n%2) return mathResult(`量角器零线已对齐。另一边在内圈 ${a}°、外圈 ${180-a}°，零刻度在外圈。这个角是多少度？`,180-a,a,
+      `零在外圈，所以另一条边只读外圈上的 ${180-a}°。`,
+      `从所在的外圈零沿刻度往前数，方向正好与内圈相反，因此用 180−${a} 得 ${180-a}。 `);
+    return mathResult(`从平角的一条边转过 ${a}°，离平角另一条边还有多少度？`,180-a,a===90?89:a,
+      `平角是 180°，做减法 180−${a}。`,`两小角拼满平角。用加法核对：${a}＋${180-a}＝180。 `);
+  },
+  'g4a-multiply': n=>{
+    const a=126+n*31,b=13+n%12*2,result=a*b;
+    return mathResult(n%2?`一套材料有 ${a} 枚零件，${b} 套一共多少枚？`:`${a} × ${b} 等于多少？`,result,result-10*a,
+      `列竖式。先乘个位 ${b%10}，再乘十位所代表的 ${b-b%10}，第二层积与十位对齐后合并。`,
+      `用分配律拆开 ${b}：${a*(b-b%10)}＋${a*(b%10)}＝${result}。`);
+  },
+  'g4a-model': n=>{
+    const unit=17+n*2, first=5+n%9, second=2+Math.floor(n/3)%6, total=unit*(first+second);
+    if(n%2) return mathResult(`前 ${first} 组和后 ${second} 组都各发 ${unit} 张卡。合计发出多少张？`,total,unit*first+second,
+      `先合计 ${first+second} 组，每组 ${unit} 张：${unit}×${first+second}。`,
+      `分别算两批，每批是 ${unit*first} 张和 ${unit*second} 张，再相加。`);
+    return mathResult(`每组交 ${unit} 件作品，共 ${first} 组，另有 ${second} 件单独交来。一共多少件？`,unit*first+second,total,
+      `每组件数×组数得 ${unit*first}，另外加 ${second} 件。`,
+      `用图画 ${first} 个一样的框，每框 ${unit}，再在框外标 ${second}，把两部分合并。`);
+  },
+  'g4a-bar': n=>{
+    const step=2+n%4, a=5+Math.floor(n/2)%7, b=2+n%3;
+    return n%2
+      ? mathResult('看图，两组的收集量合计多少件？',(a+b)*step,a+b,
+        `甲 ${a} 格、乙 ${b} 格，每格 ${step} 件，逐组换算再相加。`,`先把两根条的长度合为 ${a+b} 格，再乘每格 ${step} 件。`,{visual:{kind:'grade-four-bars',step,bars:[a,b]}})
+      : mathResult('看图，甲比乙多多少件？',(a-b)*step,a-b,
+        `甲 ${a} 格、乙 ${b} 格，分别换算为 ${a*step} 件和 ${b*step} 件，再相减。`,
+        `先画出两根条相同的长度，甲多出 ${a-b} 格，再乘每格 ${step} 件。`,{visual:{kind:'grade-four-bars',step,bars:[a,b]}});
+  },
+  'g4a-compare-plans': n=>{
+    const amount=2+n%9, a=29+n*3, b=a-3-n%3,c=a*amount, d=b*amount;
+    return mathResult(n%2?`两种同规格材料，甲店每包 ${a} 元，乙店每包 ${b} 元。各报价买 ${amount} 包，乙店总价多少元？`
+      : `两种同规格材料，甲店每包 ${a} 元，乙店每包 ${b} 元。买 ${amount} 包，选乙店比甲店省多少元？`,
+      n%2?d:c-d,n%2?c:a-b,
+      n%2?`同一家乙店按单价乘数量：${b}×${amount}＝${d}。`:`分别得到总价 ${c} 和 ${d}，再相减。`,
+      n%2?`把 ${b} 元拆成 ${b-b%10} 元和 ${b%10} 元，分别累加 ${amount} 包再合并。`:`用每包所省的 ${a-b} 元乘 ${amount} 包。`);
+  },
+  'g4b-operations': n=>{
+    const a=12+n*3,b=6+n%5,c=3+n%4,total=a+b*c;
+    return n%2
+      ? mathResult(`(${a} + ${b}) × ${c} 等于多少？`,(a+b)*c,total,
+        `括号内先算 ${a+b}，再乘 ${c}。`,`把每份拆为 ${a} 和 ${b}，按两类求 ${a*c}＋${b*c}。`)
+      : mathResult(`${a} + ${b} × ${c} 等于多少？`,total,(a+b)*c,
+        `没有括号，先求乘积 ${b*c}，再和 ${a} 相加。`,`画 ${c} 个 ${b} 的小组，再画 ${a} 个单独的点，两个部分相加。`);
+  },
+  'g4b-laws': n=>{
+    const a=27+n*7,b=8+n%6,s=n%2?99:101,result=a*s;
+    if(n%4>=2) return mathResult(`用简便方法算 25 × ${a+b} × 4。`,100*(a+b),10*(a+b),
+      `换一下因数顺序，25×4＝100，再乘 ${a+b}。`,`把每四份 25 看作一组 100，共 ${a+b} 组。`);
+    return mathResult(`${a} × ${s} 等于多少？`,result,n%2?100*a-1:100*a+1,
+      `拆 ${s} 为 100${n%2?'−':'＋'}1，再算 ${100*a}${n%2?'−':'＋'}${a}。`,
+      `把 100 份 ${a} 想成 ${100*a} 个，再${n%2?'拿掉':'补上'}一整份 ${a}。`);
+  },
+  'g4b-decimals': n=>{
+    const integer=3+n%7,tenths=1+n%8,hundredths=1+Math.floor(n/2)%8;
+    const value=`${integer}.${tenths}0${hundredths}`;
+    return n%2
+      ? mathResult(`${value} 保留两位小数，四舍五入结果是多少？`,`${integer}.${tenths}${hundredths>=5?1:0}`,`${integer}.${tenths}${hundredths>=5?0:1}`,
+        `第三位是 ${hundredths}，决定百分位${hundredths>=5?'进 1':'保持 0'}。`,`在相邻两个百分之一之间找更近的：剩余的 ${hundredths} 个千分之一${hundredths>=5?'至少到中点，向较大的取':'不到中点，取较小的'}。`,
+        {acceptEquivalent:true})
+      : mathResult(`${value} 里千分位的数字是什么？`,hundredths,0,
+        `小数点右侧第三位是千分位，数字为 ${hundredths}。`,`按 ${integer} 个一、${tenths} 个十分之一、0 个百分之一和 ${hundredths} 个千分之一拆开检查。`);
+  },
+  'g4b-decimal-calc': n=>{
+    const a=810+n*61,b=127+n%11*17,op=n%2?'−':'+',result=n%2?a-b:a+b;
+    const dec=x=>(x/100).toFixed(2);
+    return mathResult(`${dec(a)} ${op} ${dec(b)} 等于多少？`,dec(result),dec(result+10),
+      `列竖式对齐小数点，像整数加减一样逐位算，得 ${dec(result)}。`,`统一看成百分之一：${a} ${op} ${b}＝${result}，再写回 ${dec(result)}。`,
+      {acceptEquivalent:true});
+  },
+  'g4b-divide-two': n=>{
+    const d=12+n%17,q=18+n*2,r=1+n%8,total=d*q+r;
+    return n%2
+      ? mathResult(`有 ${total} 份材料，每 ${d} 份装满一盒，可以装满多少盒？`,q,q+1,
+        `列 ${total}÷${d}，由高位试商，商 ${q}，还余 ${r}。`,`用乘法夹住总数：${q} 盒用 ${d*q} 份，再多一盒需 ${d*(q+1)}，超过总数。`)
+      : mathResult(`把 ${total} 支笔每 ${d} 支装满一盒，剩余多少支？`,r,q,
+        `先求能装满 ${q} 盒，${total}−${d}×${q}＝${r}。`,`把 ${total} 与最接近且不超出的 ${d} 的倍数 ${d*q} 比较，差 ${r}。`);
+  },
+  'g4b-triangles': n=>{
+    const a=33+n%14,b=n%2?a:56+n%9,c=180-a-b;
+    return mathResult(n%2?`等腰三角形两个底角都是 ${a}°。它的顶角是多少度？`:`三角形内角分别有 ${a}°、${b}° 和一个未知角。未知角多少度？`,c,a+b===c?c+10:a+b,
+      `用 180° 减去两个已知角：180−${a}−${b}＝${c}。`,
+      `想象剪下三个角拼成平角，先把已知两角拼到一起占 ${a+b}°，剩下 ${c}° 的开口。`);
+  },
+  'g4b-average': n=>{
+    const mean=21+n*3,gap=2+n%7, a=mean-gap,b=mean+gap+2,c=mean-2;
+    return n%2
+      ? mathResult(`甲、乙和丙三组的平均收集量是 ${mean} 件，甲收 ${a} 件，乙收 ${b} 件。丙收多少件？`,c,mean,
+        `总数为 ${mean}×3＝${mean*3}，减去甲、乙的 ${a+b}，得 ${c}。`,`与平均数比，甲少 ${gap} 件，乙多 ${gap+2} 件。甲乙合计多 2 件，所以丙少 2 件。`)
+      : mathResult(`三队交作品 ${a}、${b}、${c} 件。平均每队多少件？`,mean,Math.max(a,b,c),
+        `先求三队总数 ${mean*3}，平均分成 3 份，得 ${mean}。`,
+        `把第二队多出的 ${gap+2} 件匀给第一队 ${gap} 件、第三队 2 件，三队各 ${mean} 件。`);
+  }
+};
+
+const fourthShapes = {
+  'g4a-parallel': `
+同一平面内，两条延长后始终不相交的直线是什么关系？|平行|垂直|可按定义看是否相交，也可用三角尺对齐一边观察两线方向是否相同。
+两条线相交，形成一个直角。它们是什么关系？|互相垂直|平行|用直角尺比较交角，再用“相交”排除平行。
+四边形只有一组对边平行。具体是哪类图形？|梯形|平行四边形|标出两组对边并逐一比较；只有一组平行与定义相符。
+在同一平面内，线段越过两条平行线，要使线段在两线之间最短，应怎样画？|垂直于两条平行线|平行于两条线|比较垂线段和斜线段；也可用方格纸模拟，每斜走一段要多走路。`,
+  'g4b-movement': `
+点 A 在竖直对称轴右边 4 格，对应点在什么位置？|左边同一行 4 格|右边同一行 8 格|先看左右相反，再看距轴相等；也可沿轴在脑中折过去。
+整个图向上平移 5 格，点 B 怎么走？|向上 5 格|向左 5 格|选一个角数起，以相同方式平移其他点。
+三块方块并列排成一行，从左侧沿这一行正对着看能看见几个方形？|1 个|3 个|近处方块挡住其后的方块，也可把三个方块的侧面投影叠到一起比对。
+矩形沿长边的水平方向向右移，哪项保持？|周长和面积|位置|整体刚性平移不改变边长；也可比较移动前后覆盖的方格数。`
+};
+
+const fourthChinese = {
+  'g4a-scenery': `
+“先听见山风，跨过石桥才看见瀑布。”哪两处景物按顺序出现？|山风、瀑布|瀑布、山风|“先”和“才”提示听风在前、看瀑布在后。
+“岸边的浪一层层涌来。”哪个词最能表现浪不断前进的动态？|涌|岸边|“涌”有水势向外或向前翻起的感觉。
+“晴时塔尖清楚，起雾后只剩轮廓。”写的是同一景物哪方面的变化？|清晰程度|塔的高度|“清楚”和“只剩轮廓”说的是能看清多少。
+描写雨前雨后的小池，哪句适合放在雨后？|池面还留着一圈圈水纹。|乌云正聚到池塘上方。|水纹是雨点刚落下后的痕迹，聚乌云适合放在雨前。`,
+  'g4a-questions': `
+读到旧路标被风吹倒，哪个是内容问题？|路标是怎样倒下的？|换一个结尾会怎样？|内容问题找文中已经发生的事。
+读到“雨点追逐着打在窗上”，哪个问题问写法？|为什么用“追逐”写雨点？|当天谁打开了窗？|“为什么用某词”是在追问表达效果。
+资料说蚯蚓松动土壤。哪个可以从资料继续拓展？|没有蚯蚓的土会有什么区别？|这段文字用了多大的字体？|第一个问题可以做对照观察。
+小文问“为什么作者第二次写脚步声时改用‘急促’？”它着眼于什么？|用词变化|人物年龄|问的是同一声音前后用了什么词、为何变化。`,
+  'g4a-observe': `
+要看冰块化得快不快，哪种记录能比较两个时点？|每隔两分钟量同一块冰的宽度|先写盘子花纹再看邻桌|观测时间和同一块冰的指标都统一。
+“小苗向门边弯曲”和“小苗很想出门”哪句是观察结果？|小苗向门边弯曲|小苗很想出门|方向能量或拍下来，想法是猜测。
+周一芽长2厘米，周四长7厘米，哪句比较准确？|芽长增加5厘米|芽长增加7厘米|要用末次7减初次2。
+水杯外侧出现水珠。哪句适合写进客观记录？|杯壁有许多小水珠，渐渐聚成大滴。|水珠肯定是杯里漏出来的。|记录只写所见的样子和变化，不先断定原因。`,
+  'g4a-myth': `
+神话中哪项直接表现超常想象？|一片树叶变成载人的船。|人在河边系绳。|树叶忽然变成大船超出日常经验。
+小青为拯救庄稼，跑上山找泉水。哪句适合作为经过？|小青上山寻找水源。|庄稼已经得救。|寻找是行动过程，得救是结果。
+故事写山神把仅有的一壶清水分给村民，能看出什么？|愿意和大家共渡难关|不舍得喝水|“仅有”时仍选择分给大家，提示无私。
+故事设定树灵能听懂风声。哪种续写承接设定？|树灵听出暴雨将到，通知村民。|突然忘记一切，比赛结束。|从听风出发，由线索推动接下来的行动。`,
+  'g4a-event': `
+记“自己第一次修书”，哪段适合写详细？|怎样把裂开的纸页对齐粘好|书架上的钟几点响|详写解决问题的关键动作。
+“展板被风吹倒了。我去借了胶带。”哪句交代起因？|展板被风吹倒了。|我去借了胶带。|倒下是导致借胶带的原因。
+“我顺着桌缝慢慢摸过去”写清了什么？|动作的方向和方式|故事发生的日期|“顺着”说方向，“慢慢摸”写动作。
+报道班级活动时，哪句能收住“搭纸桥”的结果？|纸桥最终承住了四本书。|同学们拿出两卷胶带。|承重成绩属于完成任务后的结果。`,
+  'g4a-emotion': `
+“门一开，小钰立刻放下手中的书，跑到门口。”哪种感受更有依据？|急切地迎接|正在生气|“立刻、跑”提示她很期待门外的人或事。
+描写等宣布比赛结果，哪句能表现紧张？|他指尖夹着号码牌，翻过去又翻回来。|号码牌的数字用蓝色印刷。|反复的小动作是心情的线索。
+“听到选中自己，她松开攥紧的手，笑了。”哪个细节写情绪的转变？|从攥紧到松开|听到口令的时刻|比较动作变化能看出从紧张到放松。
+窗外鸟声清亮，人物知道好友要来了。哪句景物描写更贴合愉快的情绪？|几声鸟鸣像轻轻敲响的铃。|鸟叫像铁门尖锐的摩擦。|清亮、轻快的声音与期待的感受一致。`,
+  'g4a-summary': `
+“门锁坏了，小丽找来老师，科技组终于进了教室。”哪个概括保留了主干？|小丽请老师解决门锁故障，科技组进了教室。|老师来了，但活动无关。|概括要留下困难、做法和结果。
+如果故事由“因没拿钥匙而回家”“拿到钥匙”“打开活动室”三件事组成，哪件事是结果？|打开活动室|回家|开门是前面行动达成的目标。
+讲“同学帮助受伤伙伴”时，应选哪个作为关键经过？|她扶伙伴去医务室|路边的树有三棵|扶去医务室直接解决故事里的困难。
+“池上起雾，司机减速，一车人平安到站。”概括时哪项不可少？|司机因雾减速|车内靠窗座位的颜色|减速是应对大雾、保证安全的关键行动。`,
+  'g4a-letter': `
+写给表姐的信，开头称呼应该写谁？|表姐|自己|称呼要告诉读者这是给谁的。
+写信想感谢小默帮忙复习，哪句话更具体？|谢谢你陪我逐题检查三道错题。|你真的很好。|第一句说清了感谢的缘由。
+信要约周五中午图书室见面，哪句写全关键信息？|周五中午我们在图书室碰面，好吗？|有空来见我吧。|时间、地点和请求齐全。
+署名时应写谁的名字？|写信人|收信人|署名是对自己身份的说明；收信人在开头称呼中出现。`,
+  'g4b-rural': `
+“她一回头就能闻到墙边的槐花香。”这里是哪种感觉？|嗅觉|听觉|“闻”说明靠鼻子感受到香味。
+“月光轻轻搭在屋檐上。”哪个字给月光赋予了人的动作？|搭|檐|“搭”像人把一件东西轻放在另一处。
+“溪声像奶奶哼着的歌”表现怎样的感受？|亲切熟悉|突然惊恐|拿奶奶哼歌作比，带出熟悉和温暖。
+写想念的旧院子，哪条比“好看极了”更能说明熟悉感？|门轴一响，我就知道爷爷回来了。|这个院子是一个院子。|熟悉声音与生活记忆形成联系。`,
+  'g4b-science': `
+对“纸团在风口滚了两米”，哪项是直接报告的事实？|纸团滚了两米|其他物品也一定滚两米|能确认的是原实验距离，另一说法超出材料。
+“周三三组同学在操场试飞纸飞机。”哪部分告诉时间？|周三|操场|日期对应时间，地点另用“操场”。
+这次实验只改变风力，适合问什么？|风力大小怎样影响纸条飘动？|纸条的生产日期是什么？|可比较不同风力下同一纸条的状态。
+要播报“两支队伍在校园做净水实验”，还需要问什么才能交代结果？|过滤前后水的样子怎样变化？|水杯正面的图案是什么？|实验结果对应实际观察到的变化。`,
+  'g4b-poetry': `
+“候鸟给天空画了一道弧线”中的弧线对应什么？|候鸟飞行的路线|屋顶的走廊|把飞行路线想象成图画上的线。
+“我想留住一滴雨，／我想留住一阵风。”反复出现的是什么？|我想留住|一滴雨|重复起句给节奏，也加强愿望。
+“暮色像一条紫围巾，把山腰轻轻围住。”能看到哪种色彩？|紫色|橙色|“紫围巾”提供了暮色的色彩。
+想把夜间走动的萤火虫写成小诗，哪句有可想象的画面？|草尖的几点绿光，提着小灯往远处走。|那里有点儿好玩。|“几点绿光”有颜色，“走”写出移动。`,
+  'g4b-animals': `
+“灰猫蹑手蹑脚地绕到窗边。”哪个词最能表现它放轻步子？|蹑手蹑脚|窗边|“蹑手蹑脚”描写动作轻且谨慎。
+描述水鸟在池中捕食，哪个细节切题？|它把头伸进水里，叼起一条小鱼。|池边广告牌写着四个字。|入水和叼鱼都与觅食有关。
+“每到中午，它总趴在窗台的暖处。”重点是哪个方面？|反复出现的生活习惯|窗台长度|“每到、总”说明常常这样。
+要写兔子吃菜时嘴动得快，用哪个句子？|它的三瓣嘴飞快抖着，叶边一点点缺下去。|笼子有一扇门。|从嘴的动作和叶片变化证实吃得快。`,
+  'g4b-tour': `
+“跨过小桥，穿过树林，沿路来到山门。”最后一个地点是什么？|山门|小桥|“来到”引出最终到达处。
+要连接“花坛”和“凉亭”两个地点，哪句衔接自然？|走出花坛边的小径，沿台阶向上就到凉亭。|这里的石头很大。|句中写了离开地点、方向和下一站。
+游记题目《游荷塘》，哪一处宜多写两句？|池中最有特色的一片荷叶|途中买水时数了几枚硬币|详略要服务标题，荷塘的特色景物是重点。
+展牌写“从南门入内，先到钟楼，再到展厅”。哪站在中间？|钟楼|展厅|用箭头南门→钟楼→展厅定位。`,
+  'g4b-growth': `
+“原来不敢上台，她每天练几分钟，终于完成演讲。”最能推动变化的是哪件事？|每天练习|演讲厅有灯|多次练习直接帮助她顺利完成演讲。
+“周远第一次失败后，找同伴讨论第二种折法。”哪个词体现积极应对？|讨论|第一次|“讨论”表明他主动寻找办法。
+写一次改进，哪两项必须交代？|原来的问题与后来采取的办法|教室和学校的墙色|问题、行动连起来，读者才明白为什么改。
+“阿梅写错后核对题意，再写了一遍，终于正确。”能提炼出什么经验？|先找错误原因再试|把题目先抄两遍就会对|“核对题意”是第二次成功之前的实际行动。`,
+  'g4b-people': `
+“老师把钥匙交给小枫保管。”侧面体现什么？|老师信任小枫|小枫会开每一扇门|交给他保管是别人表达信任的行动。
+哪个细节能表现同伴愿意分享？|只剩两张彩纸，他分给邻桌一张。|他喜欢蓝色。|纸不多仍分给别人，是可见的行为。
+同伴介绍小良“耐心”，哪句话可以作为语言证据？|“我们可以慢一点，从头再试。”|“我今天带了两本书。”|愿意放慢速度为别人留出重新尝试的机会。
+要评价小凡“有责任心”，哪个行为最贴切？|离开前又返回检查门窗是否关好。|离开时走得最快。|返回检查是主动完成自己承担的任务。`,
+  'g4b-fairy': `
+会说话的小桥只在听见歌声时开门。哪种情节符合？|小鸟唱一段，小桥开门。|不发声音，门自己开了。|歌声是童话设定的必要条件。
+小松果遇到水就会发光，下一段如何给小伙伴照路？|在松果上滴几滴水，让它发亮。|放进干燥袋子里靠黑暗发亮。|办法应沿用作品给出的触发条件。
+一向怕高的小熊要取屋顶的风筝。哪句续写和它的特点一致？|它请会飞的朋友帮忙。|它马上爱上了高空翻飞。|请朋友帮忙既解决问题，也保留怕高的设定。
+故事设定云能把承诺变成透明的桥。小溪挡路时怎样承接？|角色守约，云铺起桥面。|绕开所有承诺，桥毫无原因出现。|故事的新变化应当由已有规则或行动引起。`
+};
+
+const fourthEnglish = {
+  'g4a-chores': `
+“Could you make the bed?” 要帮忙做什么？|整理床铺|摆餐具|make the bed 是固定搭配，bed 指床。
+要问妈妈是否需要帮助，哪句合适？|Can I help you?|Can you sing?|第一句的 I 是主动提供帮助的人。
+“I can fold the clothes.” 应在任务表勾选哪项？|叠衣服|洗餐具|fold 和 clothes 表示把衣服叠好。
+“Leo sweeps the floor. Amy washes the dishes.” 谁负责扫地？|Leo|Amy|沿 sweep the floor 找主语 Leo。`,
+  'g4a-friends': `
+“Nora is kind and has curly hair.” 哪项形容头发？|curly|kind|curly 说明头发的形状。
+哪句能写在朋友相册，表示“我朋友很安静”？|My friend is quiet.|My friend has quiet.|quiet 表示状态，跟在 is 后。
+描述 Sam 戴眼镜，选哪句？|Sam wears glasses.|Sam is glasses.|wears 能连接人物和佩戴物。
+“Ed is tall, but his sister is short.” 哪个人高？|Ed|Ed 的姐姐或妹妹|but 提示对比，tall 属于前一个主语。`,
+  'g4a-places': `
+“There are three trees by the shop.” 商店旁有什么？|三棵树|一棵树|there are 对应 three trees。
+哪句准确描述一家公园附近的商店？|There is a shop near the park.|There are a shop near the park.|a shop 是一件事物，用 is。
+“The school is between the library and the park.” 哪个地点在另两个中间？|学校|图书馆|主语 school 是句子描述的位置中心。
+社区地图需要说明“公车站在门后”，哪个短语合适？|behind the gate|in front of the gate|behind 和 in front of 方向相反。`,
+  'g4a-community': `
+“Can you carry these books, please?” 哪个动作是请求？|搬书|借书|carry 的动作是携带或搬运。
+对方接住你递来的箱子，怎么道谢？|Thank you for your help.|It’s beside the box.|根据情境，第一句有明确感谢。
+“Kai helps older people cross the road.” 志愿者做了什么？|帮助老人过马路|在路上卖水果|cross the road 是过马路。
+想邀请同伴参加校园清洁，哪句最贴合？|Let’s clean the park together.|This plant is green.|Let’s 发出邀请，clean 点明行动。`,
+  'g4a-weather': `
+“It’s foggy this morning.” 早晨是哪种天气？|有雾|有风|fog 表示雾，wind 才是风。
+“It rains in the morning. The afternoon is sunny.” 什么时候更适合晾晒衣物？|下午|早晨|下午的 sunny 对应可晒太阳的时段。
+“It’s very windy. Close the window, please.” 有什么建议？|请关窗|请开窗|close 和 open 方向相反。
+广播说 “It’s cold and wet.” 外出要考虑哪两项？|寒冷和潮湿|炎热和干燥|cold 和 wet 分别描述冷和湿。`,
+  'g4a-seasons': `
+“I wear warm gloves in winter.” 哪个词告诉季节？|winter|gloves|前者回答什么时候，后者是衣物。
+如何问“这件外套是谁的”？|Whose coat is this?|Where is the coat?|Whose 询问物品所属。
+卡片写 “Spring is warm. I often wear a shirt.” 穿什么？|衬衫|手套|wear 后的 a shirt 是衣物。
+要向伙伴解释雨天穿雨衣的原因，哪个合适？|I wear a raincoat because it is rainy.|I wear gloves because it is hot.|because 后解释选择，raincoat 和雨天相配。`,
+  'g4a-phonics': `
+Which word sounds like late in the middle?|gate|hat|late、gate 中的 a 都发 /eɪ/。
+“pin” 加词尾 e 成为 “pine”，什么发生变化？|i 的声音|开头 p 的声音|pin 的 /ɪ/ 变成 pine 的 /aɪ/。
+Which word has the same vowel sound as cute?|mute|cut|cute 和 mute 的 u 都读 /juː/，cut 的 u 是短音。
+手作卡要写表示“把牌子藏起来”的动词 h_de。缺哪个字母？|i|a|hide 的意思是藏，词中间写 i。`,
+  'g4a-reading': `
+“On Tuesday, we meet outside Room 6.” 约在什么时候？|Tuesday|Room 6|on Tuesday 提示星期，Room 6 是地点。
+“Bring two pencils and one notebook.” 要带几支铅笔？|two|one|two 修饰 pencils，one 修饰 notebook。
+纸条说 “The shop closes at five.” 商店几点关闭？|five|four|closes 后的 at five 说明关闭时间。
+写短信告诉伙伴“我会带水”。哪句能用？|I will bring water.|I will bring a hat.|bring 后的 water 对应要带的物品。`,
+  'g4b-class-rules': `
+“Put the books back.” 要做什么？|把书放回去|把书带走|back 表示回到原处。
+“Don’t talk loudly.” 禁止什么？|大声说话|轻声说话|loudly 指声音很大，Don’t 提示禁止。
+牌子写 “Keep the floor clean.” 规则关注哪里？|地面|窗户|floor 是地面。
+怎样礼貌提醒同学排一队？|Line up, please.|Make a loud noise.|line up 是排队，please 让语气更礼貌。`,
+  'g4b-family-rules': `
+“You must wash your hands before lunch.” 什么时候洗手？|午饭前|午饭后|before 与 after 意思相反。
+哪句表示“你可以在这里读书”？|You can read here.|You mustn’t read here.|can 表示允许，mustn’t 表示禁止。
+“Mia can play after she finishes her work.” 她什么时候可以玩？|完成事情之后|完成之前|after 引出先完成的条件。
+家里的安全牌想禁止碰热锅，哪句准确？|Don’t touch the hot pot.|Please touch the hot pot.|用 Don’t 标明禁止。`,
+  'g4b-school-time': `
+“It’s half past seven.” 是什么时间？|7:30|7:00|half past 指已经过了三十分钟。
+“Lessons start ___ eight.” 填什么？|at|in|具体钟点前用 at。
+“Art is at 10:20 and lunch is at 12:10.” 哪个先开始？|美术|午饭|对照活动右侧的时刻，10:20 早于 12:10。
+想问放学的时间，哪句合适？|What time does school finish?|Where is the school?|What time 问钟点，Where 问位置。`,
+  'g4b-shopping': `
+“May I try on this coat?” 顾客想做什么？|试穿外套|归还外套|try on 表示试穿。
+“These socks are eight yuan a pair.” 一双多少钱？|8 元|16 元|a pair 已经表示一双。
+红帽 22 元，蓝帽 27 元。Which hat is cheaper?|红帽|蓝帽|cheaper 问更便宜的一件，22 小于 27。
+袜子要买两双，如何用英文问总价？|How much are these two pairs of socks?|How much is this sock?|two pairs 是复数单位，与 are 搭配。`,
+  'g4b-farm': `
+“What are these? They are potatoes.” 这里有什么？|土豆|西红柿|potatoes 来自 potato，tomatoes 来自 tomato。
+“I see three ___.” 指看到三只羊，怎么填？|sheep|sheeps|sheep 单复数同形。
+“The cows are next to the big barn.” 牛在什么旁边？|大谷仓|鸡笼|next to 后的大谷仓是参照物。
+给一株近处的番茄贴说明，哪句单复数合适？|This is a tomato plant.|These are a tomato plant.|a tomato plant 是单数，用 this is。`,
+  'g4b-food-chain': `
+“Wash the beans before you cook them.” 哪一步更早？|洗豆子|煮豆子|before 标明先后。
+“We picked the apples. Then we washed them.” them 是什么？|apples|hands|代词指前文紧邻的复数事物 apples。
+“First plant the seeds; finally pick the carrots.” 最后做什么？|收获胡萝卜|播种|finally 明确提示最后一步。
+食物流程卡上已写 “First, wash the fruit.” 下一句哪个合理？|Then cut the fruit.|Finally plant the same seeds.|沿食物准备步骤，清洗后可切水果。`,
+  'g4b-phonics': `
+Which word has the same vowel sound as tea?|sea|head|tea 和 sea 中的 ea 都发 /iː/。
+Which word sounds like light in the middle?|night|sit|light、night 的 igh 都发 /aɪ/。
+单词 bread 的 ea 是否与 sea 的 ea 一样？|不一样|一样|bread 的 ea 发 /e/，sea 是 /iː/。
+农场卡片画一只船，船的英文标签 b__t 缺哪两个字母？|oa|oo|boat 与 coat 都用 oa 拼写。`,
+  'g4b-reading': `
+时间表写 “Bus leaves at 8:15.” 车什么时候出发？|8:15|8:50|at 后紧接的数字是出发时间。
+“Six yuan each. Two for ten.” 买两件要多少钱？|10 元|12 元|two for ten 指两件合计十元。
+通知 “Meet by the east gate. Bring one bottle of water.” 地点在哪里？|东门边|活动室门口|by the east gate 明确给出地点。
+班级流程卡写 “Pick tomatoes at 10:20. Lunch is at 11:30.” 午饭前要做什么？|摘西红柿|整理书包|比两个时刻，10:20 对应摘番茄活动。`
+};
+
 const sequenceCards = {
+  'g4a-summary': [
+    ['参观前，导览员发现地图上的出口画反了。','导览员核对路牌并修正地图。','参观队按新地图找到了出口。'],
+    ['准备义卖时，小组发现标价牌弄丢了。','大家查清价格，重新写了标价牌。','顾客看清价格后顺利参加义卖。'],
+    ['一阵风把纸风车吹散了。','小组收回零件，并换上更结实的纸轴。','重新装好的纸风车在风里转动起来。'],
+    ['展板上的作品找不到对应的名字。','组员用名单逐一核对作品和标签。','每件作品旁都贴上了正确的名字。']
+  ],
+  'g4b-food-chain': [
+    ['Pick the tomatoes.','Wash the tomatoes.','Use the washed tomatoes to make a salad.'],
+    ['Plant the carrot seeds.','Wait for the carrots to grow.','Pick the carrots.'],
+    ['Get two apples from the market.','Wash both apples at home.','Cut the clean apples for a snack.'],
+    ['Pick the green beans on the farm.','Wash the green beans in the kitchen.','Cook the clean green beans for dinner.']
+  ],
   'g1b-simple-story': [
     ['杯里没有水。','小雨往杯里倒水。','杯里有半杯水了。'],
     ['小星拿出一张纸。','他把纸折成纸飞机。','他让纸飞机飞出去。'],
@@ -710,6 +1015,18 @@ const sequenceCards = {
 
 // Open tasks include a possible response and a checklist tied to the requested task.
 const writingCards = {
+  'g4a-event': [
+    ['活动室门口的地垫卷起来了。写三句话，讲清你发现后怎样处理。','进活动室时，我发现门边的地垫卷起了一角。我用脚轻轻压住这一边，再把另一边推平。后面的同学都顺利进了门。','有起因和结果；重点交代把地垫铺平的动作'],
+    ['手中一摞图书散了。写三句话，重点写和同伴怎样捡好书。','进门时，一摞书从我手里滑了下来。我和同伴从两端往中间逐本捡，把书脊朝同一边叠起来。很快我们便能把书放回架上。','主要段落详写捡和整理；能看出两人合作'],
+    ['纸船进水了。用三句话交代你怎么让它重新浮起来。','纸船的边一软，水就漫了进去。我把船捞出来，沿中线重新压紧折痕，还把两边向上折高。再次试放时，船没有立刻进水。','有前后的变化；至少写清一个实际动作'],
+    ['展示卡掉进柜子缝里了。写下你找回它的经过。','我听见纸片落进柜侧的细响，才发现展示卡掉了。我把薄尺沿缝斜着伸下去，轻轻托住卡角往上提。卡片重新回到了我的手里。','把问题、处理和结果连起来；动作具体']
+  ],
+  'g4b-tour': [
+    ['从入口走到亭子，再走到花廊。用两三句写清路线并详写一景。','进门沿小路往上，就到了石亭。亭前的青石上留下了深深浅浅的雨印。走过石亭，再往前就是一排遮着藤叶的花廊。','三个地点顺序完整；中间选择一处详细写'],
+    ['从图书房到小桥再到湖边。写两句路线和一处景物细节。','从图书房出来，跨过院门前的弯桥，就能沿柳树走到湖边。水面映着柳条，风一吹，绿色倒影便轻轻散开。','路线可跟着走；细节和所在地点一致'],
+    ['游览顺序是木门、竹林、望台。补一段游记，写出在一处听见的声音。','推开木门，我先沿石径走进竹林。竹叶在头顶相互碰着，发出细细的沙沙声。出了竹林，踏上几级台阶，就到了望台。','地点有过渡；声音让读者想象现场'],
+    ['沿走廊从校门到展厅，再到操场。写三句导览词，重点介绍展厅。','从校门进来，沿右侧走廊到展厅。展厅里陈列着纸飞机和它们的试飞记录。穿过展厅旁的门，再往西就是操场。','交代前后地点关系；展厅内容比其他处具体']
+  ],
   'g2b-writing-scenes': [
     ['用两句话写清小秋在花坛边怎样捡起落叶。','午休时，小秋在花坛边捡落叶。她弯下腰，把叶子一片片放进篮里。','找得到地点；有一个捡或收的具体动作'],
     ['写小雨在图书角发现书倒了，怎么把书整理好。','下午，小雨看到图书角的书倒了。她扶起书本，把大书放到最下面一层。','说出发现；把怎样整理写出来'],
@@ -787,7 +1104,9 @@ function compare(card) {
 function simple(card, ask, seed, type = 'pick') {
   const {answer, error, visual, answerFormat} = card;
   const choices = seed % 2 ? [error,answer] : [answer,error];
-  const accepted = /^-?\d+\.\d$/.test(answer)
+  const accepted = card.acceptEquivalent
+    ? [...new Set([answer,String(Number(answer)),answer+'0'])]
+    : /^-?\d+\.\d$/.test(answer)
     ? [answer,...(answer.endsWith('.0') ? [String(Number(answer))] : []),answer+'0']
     : [answer];
   return {
@@ -889,16 +1208,18 @@ function mathQuestion(makeCase, city, angle, slot, scene) {
 }
 
 const cityPracticeBank = (() => {
-  const lookup = {...languageCards,...englishCards,...mathCards};
+  const lookup = {...languageCards,...fourthChinese,...englishCards,...fourthEnglish,...mathCards,...fourthShapes};
   const entries = Object.entries(lookup).map(([id,rows])=>[id,readCards(rows)]);
-  const all = [...entries,...Object.keys(mathCases).map(id=>[id,null])];
+  const allMath = {...mathCases,...fourthMath};
+  const all = [...entries,...Object.keys(allMath).map(id=>[id,null])];
   return Object.fromEntries(all.map(([id,cards]) => {
-    const english = Object.prototype.hasOwnProperty.call(englishCards,id);
-    const subjectIndex = english ? 2 : cards && Object.prototype.hasOwnProperty.call(languageCards,id) ? 0 : 1;
+    const has = (source) => Object.prototype.hasOwnProperty.call(source,id);
+    const english = has(englishCards) || has(fourthEnglish);
+    const subjectIndex = english ? 2 : has(languageCards) || has(fourthChinese) ? 0 : 1;
     const questions = cityNames.flatMap((city,cityIndex)=>[0,1,2,3].flatMap(angle=>[0,1].map(slot=>{
       const scene = scenes[cityIndex][subjectIndex];
       const content = cards ? languageQuestion(id,cards,cityIndex,angle,slot,scene,english)
-        : mathQuestion(mathCases[id],cityIndex,angle,slot,scene);
+        : mathQuestion(allMath[id],cityIndex,angle,slot,scene);
       return {
         id:`${id}-city-${cityIndex + 1}-${angle + 1}-${slot + 1}`,
         city, angle, ...content
