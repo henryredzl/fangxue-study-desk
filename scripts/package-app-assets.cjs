@@ -1,18 +1,13 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const cityQuestions = require('../city-bank.js');
+const loadQuestionBank = require('./load-question-bank.cjs');
 
 function packageAssets(output, platform) {
   if (!output) throw new Error('An app assets folder is required.');
   const root = path.resolve(__dirname, '..');
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const bank = html.match(/<script id="question-bank" type="application\/json">([\s\S]*?)<\/script>/);
-  if (!bank) throw new Error('Missing question bank in index.html.');
-  const originalQuestions = Object.values(JSON.parse(bank[1])).flatMap(topics => topics.flatMap(topic =>
-    topic.questions.map((question, index) => ({...question,id:`${topic.id}-${index + 1}`}))
-  ));
-  const gradingBank = Object.fromEntries([...originalQuestions,...Object.values(cityQuestions).flat()].map(question => {
-    const {id, type, answer, choices, caseSensitive} = question;
+  const gradingBank = Object.fromEntries(Array.from(loadQuestionBank(html), ([id, question]) => {
+    const {type, answer, choices, caseSensitive} = question;
     return [id,{type,answer,choices,caseSensitive}];
   }));
   fs.mkdirSync(output, { recursive: true });

@@ -5,18 +5,13 @@ const { DatabaseSync } = require('node:sqlite');
 const { createHash, randomBytes, scrypt, timingSafeEqual } = require('node:crypto');
 const { promisify } = require('node:util');
 const { spawn } = require('node:child_process');
-const cityQuestions = require('./city-bank.js');
+const loadQuestionBank = require('./scripts/load-question-bank.cjs');
 
 const port = Number(process.env.STUDY_PORT || 4178);
 const address = `http://127.0.0.1:${port}`;
 const dataDir = resolve(process.env.STUDY_DATA_DIR || join(__dirname, 'data'));
 const offlinePage = readFileSync(join(__dirname, 'index.html'), 'utf8');
-const bankMatch = offlinePage.match(/<script id="question-bank" type="application\/json">([\s\S]*?)<\/script>/);
-const questionBank = JSON.parse(bankMatch[1]);
-const questions = new Map(Object.values(questionBank).flatMap(topics => topics.flatMap(topic =>
-  topic.questions.map((question, index) => [`${topic.id}-${index + 1}`, question])
-)));
-for (const question of Object.values(cityQuestions).flat()) questions.set(question.id,question);
+const questions = loadQuestionBank(offlinePage);
 const page = offlinePage.replace('</head>', '<link rel="stylesheet" href="/account.css">\n</head>')
   .replace('</body>', '<script src="/account.js"></script>\n</body>');
 const resources = new Map([

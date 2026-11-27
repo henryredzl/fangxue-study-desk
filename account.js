@@ -31,6 +31,7 @@
   }
 
   const draftKey = user => `fangxue-account-draft-${user.id}-${user.username}`;
+  const validDraft = draft => Array.isArray(draft?.ids) && draft.ids.length > 0 && draft.ids.every(id => questionMap[id]);
 
   function useAccount(data) {
     account.user = data.user;
@@ -40,11 +41,17 @@
       session = guest.session;
       return;
     }
-    store = { records: data.records, session: null };
+    store = { records: data.records, session: null, olympiadDrafts: {} };
     session = null;
     try {
-      const draft = JSON.parse(sessionStorage.getItem(draftKey(data.user)) || 'null');
-      if (Array.isArray(draft?.ids) && draft.ids.every(id => questionMap[id])) session = draft;
+      const saved = JSON.parse(sessionStorage.getItem(draftKey(data.user)) || 'null');
+      const draft = saved?.session ?? saved;
+      if (validDraft(draft)) session = draft;
+      for (const [key, paper] of Object.entries(saved?.olympiadDrafts ?? {})) {
+        if (paper?.back === 'olympiad' && paper.key === key && validDraft(paper) && paper.index < paper.ids.length) {
+          store.olympiadDrafts[key] = paper;
+        }
+      }
     } catch { /* The stored answers are still available from SQLite. */ }
   }
 
@@ -152,7 +159,12 @@
     accountPage,
     recordsPage,
     saveDraft(draft) {
-      try { sessionStorage.setItem(draftKey(this.user), JSON.stringify(draft)); }
+      try {
+        sessionStorage.setItem(draftKey(this.user), JSON.stringify({
+          session: draft,
+          olympiadDrafts: store.olympiadDrafts
+        }));
+      }
       catch { /* The attempt records are already saved on the server. */ }
     },
     decorate() {
@@ -325,7 +337,9 @@
       if (route.page === 'home') return false;
       if (route.page === 'quiz' || route.page === 'finish') go(session.back, session.key);
       else if (route.page === 'study') go('subject', topicMap[route.key].subject);
-      else if (route.page === 'drills') go('subject', 'math');
+      else if (route.page === 'drills' || route.page === 'olympiad') go('subject', 'math');
+      else if (route.page === 'english-course') go('subject', 'en');
+      else if (route.page === 'english-lesson') go('english-course', englishLessonMap[route.key].unit);
       else if (route.page === 'city-detail') go('cities', route.key.split(':')[3] || '');
       else go('home');
       return true;
